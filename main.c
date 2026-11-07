@@ -6,6 +6,8 @@
 #define BLUE "\e[1;34m"
 #define RESET "\e[0m"	
 
+static char outbuf[1 << 16];
+
 
 static void format_size(char *out, size_t out_size, long long bytes)
 {
@@ -28,12 +30,25 @@ static void format_size(char *out, size_t out_size, long long bytes)
 static void print_entry(const char *name, int dir, int indent, const char *size)
 {
     if (indent)
-        printf("%*s|-> ", indent, "");
+    {
+        for(int i = 0;i < indent;i++)
+            putchar(' ');
+        fputs("|-> ", stdout);
+    }
 
     if (dir)
-        printf(BLUE "%s" RESET "\n", name);
+    {
+        fputs(BLUE, stdout);
+        fputs(name, stdout);
+        fputs(RESET "\n", stdout);
+    }
     else
-        printf("%s (%s)\n", name, size);
+    {
+        fputs(name, stdout);
+        fputs(" (", stdout);
+        fputs(size, stdout);
+        fputs(")\n", stdout);
+    }
 }
 
 
@@ -90,7 +105,8 @@ int walk(const char *path, int indent)
 }
 
 int main(int argc, char **argv)
-{
+{   
+    setvbuf(stdout, outbuf, _IOFBF, sizeof(outbuf));
     //default = current dir
     const char *path = ".";
 
